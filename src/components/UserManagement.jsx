@@ -150,7 +150,7 @@ const List = ({ history, privilege }) => {
       >
 
       </Button>
-      <UserModal load={load} setLoad={setLoad} visible={visible} setVisible={setVisible} />
+      <UserModal load={load} setLoad={setLoad} visible={visible} setVisible={setVisible} idPrivilege={privilege}/>
 
       <Table columns={columns} dataSource={data}
         pagination={pagination} loading={loading}

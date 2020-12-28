@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import { Layout, Menu } from 'antd';
 import {
@@ -31,8 +31,6 @@ function Home({ history }) {
   const handleClick = (e) => {
     setTypeTable(e.key);
   }
-
-
 
   return (
     <Layout style={{ minHeight: '100vh' }}>

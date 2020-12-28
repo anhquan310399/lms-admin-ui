@@ -20,7 +20,7 @@ const validateMessages = {
     }
 };
 
-const ModalPopup = ({ load, setLoad, visible, setVisible }) => {
+const ModalPopup = ({ load, setLoad, visible, setVisible, idPrivilege }) => {
     const [loading, setLoading] = useState(false);
 
     const handleCancel = () => {
@@ -29,18 +29,18 @@ const ModalPopup = ({ load, setLoad, visible, setVisible }) => {
     };
 
     const [form] = Form.useForm();
-    
+
     const onFinish = (values) => {
         console.log(values);
         setLoading(true);
         const token = getCookie("token");
         axios
             .post(`${process.env.REACT_APP_API_URL}/user/`, {
-                code: values.user.code,
-                firstName: values.user.firstName,
-                surName: values.user.surName,
-                emailAddress: values.user.emailAddress,
-                idPrivilege: values.user.idPrivilege
+                code: values.code,
+                firstName: values.firstName,
+                surName: values.surName,
+                emailAddress: values.emailAddress,
+                idPrivilege: values.idPrivilege
             }, {
                 headers: {
                     Authorization: token,
@@ -80,6 +80,12 @@ const ModalPopup = ({ load, setLoad, visible, setVisible }) => {
         getPrivilege();
     }, [])
 
+    useEffect(() => {
+        form.setFieldsValue({
+            idPrivilege: idPrivilege
+        })
+    }, [idPrivilege])
+
     const { loadingPrivilege, privilege } = state;
 
     return (
@@ -87,7 +93,7 @@ const ModalPopup = ({ load, setLoad, visible, setVisible }) => {
         <Modal
             visible={visible}
             title="Add New User"
-            closable={false}
+            onCancel={handleCancel}
             footer={[
                 <Button key="back" onClick={handleCancel}>
                     Return
@@ -105,8 +111,9 @@ const ModalPopup = ({ load, setLoad, visible, setVisible }) => {
                 onFinish={onFinish}
                 validateMessages={validateMessages}>
                 <Form.Item
-                    name={["user", "code"]}
+                    name={"code"}
                     label="Code"
+                    hasFeedback
                     rules={[
                         {
                             required: true
@@ -115,8 +122,9 @@ const ModalPopup = ({ load, setLoad, visible, setVisible }) => {
                     <Input />
                 </Form.Item>
                 <Form.Item
-                    name={["user", "idPrivilege"]}
+                    name={"idPrivilege"}
                     label="Privilege"
+                    hasFeedback
                     rules={[
                         {
                             required: true
@@ -132,8 +140,9 @@ const ModalPopup = ({ load, setLoad, visible, setVisible }) => {
                     </Select>
                 </Form.Item>
                 <Form.Item
-                    name={["user", "emailAddress"]}
+                    name={"emailAddress"}
                     label="Email"
+                    hasFeedback
                     rules={[
                         {
                             required: true,
@@ -143,8 +152,9 @@ const ModalPopup = ({ load, setLoad, visible, setVisible }) => {
                     <Input />
                 </Form.Item>
                 <Form.Item
-                    name={["user", "surName"]}
+                    name={"surName"}
                     label="Surname"
+                    hasFeedback
                     rules={[
                         {
                             required: true
@@ -153,8 +163,9 @@ const ModalPopup = ({ load, setLoad, visible, setVisible }) => {
                     <Input />
                 </Form.Item>
                 <Form.Item
-                    name={["user", "firstName"]}
+                    name={"firstName"}
                     label="First name"
+                    hasFeedback
                     rules={[
                         {
                             required: true

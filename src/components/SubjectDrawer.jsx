@@ -4,7 +4,12 @@ import { Drawer, Form, Button, Input, Select, Upload } from 'antd';
 import { getCookie } from "../controllers/localStorage.js";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import fileDownload  from 'js-file-download';
+import {
+    MinusCircleOutlined,
+    PlusOutlined, UploadOutlined,
+    ExportOutlined
+} from '@ant-design/icons';
 
 const { Option } = Select;
 
@@ -133,7 +138,6 @@ const SubjectDrawer = ({ load, setLoad, visible, setVisible, subject, setSubject
     }, [])
 
     useEffect(() => {
-        console.log(subject);
         form.setFieldsValue({
             name: subject.name || '',
             idLecture: subject.lecture ? subject.lecture.code : null,
@@ -167,9 +171,27 @@ const SubjectDrawer = ({ load, setLoad, visible, setVisible, subject, setSubject
             return false;
         }
     };
-
+    const [exportSubject, setExportSubject] = useState(false);
+    const handleExportSubject = () => {
+        setExportSubject(true);
+        const token = getCookie("token");
+        axios
+            .get(`${process.env.REACT_APP_API_URL}/subject/${subject._id}/export`, {
+                headers: {
+                    Authorization: token,
+                },
+                responseType: 'blob'
+            })
+            .then((res) => {
+                fileDownload(res.data,`${subject.name}.json`);
+                setExportSubject(false);
+            }).catch(error => {
+                toast.error(error.response.data.message);
+                setExportSubject(false);
+            });
+    }
     return (
-        <>
+        <Button>
             <Drawer
                 title={subject._id ? "Update subject" : "Create a new subject"}
                 width={500}
@@ -185,6 +207,17 @@ const SubjectDrawer = ({ load, setLoad, visible, setVisible, subject, setSubject
                     </div>
                 }
             >
+                {subject._id && (
+                    <Button
+                        style={{
+                            marginBottom: 8
+                        }}
+                        icon={<ExportOutlined />}
+                        onClick={handleExportSubject}
+                        loading={exportSubject}
+                    >
+                        Export subject to .json</Button>
+                )}
                 <Form
                     form={form}
                     id="subjectForm"
@@ -294,7 +327,7 @@ const SubjectDrawer = ({ load, setLoad, visible, setVisible, subject, setSubject
                     </Form.Item>
                 </Form>
             </Drawer>
-        </>
+        </Button>
     );
 };
 
