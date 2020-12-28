@@ -33,6 +33,12 @@ export const setLocalStorage = (key, value) => {
     }
 };
 
+export const getLocalStorage = (key) => {
+    if (window !== "undefined") {
+        return localStorage.getItem(key);
+    }
+};
+
 // Remove from local storage
 export const removeLocalStorage = (key) => {
     if (window !== "undefined") {
@@ -68,12 +74,9 @@ export const signOut = (next) => {
     next();
 };
 
-export const updateUser = (response, next) => {
-    console.log("UPDATE USER IN LOCAL STORAGE HELPERS", response);
+export const updateUser = (user) => {
+    console.log("UPDATE USER IN LOCAL STORAGE HELPERS");
     if (typeof window !== "undefined") {
-        let auth = JSON.parse(localStorage.getItem("user"));
-        auth = response.data;
-        localStorage.setItem("user", JSON.stringify(auth));
+        localStorage.setItem("user", JSON.stringify(user));
     }
-    next();
 };

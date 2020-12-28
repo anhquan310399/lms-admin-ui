@@ -49,7 +49,7 @@ const AccountInfo = ({ history }) => {
 
   const content = (
     <div>
-      <a className='menu_item setting'>Account settings</a>
+      {/* <a className='menu_item setting'>Account settings</a> */}
       <a className='menu_item sign_out'
         onClick={() => {
           signOut(() => {
