@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getCookie, isAuth } from "../controllers/localStorage.js";
+import { getCookie, isAuth } from "../services/localStorage.js";
 import axios from "axios";
 import { toast } from "react-toastify";
 import SubjectDrawer from './SubjectDrawer.jsx';
@@ -9,7 +9,8 @@ import {
   ExclamationCircleOutlined,
   PlusOutlined,
   EyeOutlined,
-  EyeInvisibleOutlined
+  EyeInvisibleOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 
 const { confirm } = Modal;
@@ -32,13 +33,19 @@ const List = ({ history }) => {
     loading: false,
   });
 
-
+  const [isAuthenticate, setAuthenticate] = useState(true);
+  useEffect(() => {
+    if (!isAuthenticate) {
+      history.push("/login");
+      toast.error("Your token is expired. Please login again");
+    }
+  }, [isAuthenticate])
 
   useEffect(() => {
     getAll();
   }, [load]);
 
-  const deleteSubject = (id) => {
+  const lockSubject = (id) => {
     const token = getCookie("token");
     return axios
       .put(`${process.env.REACT_APP_API_URL}/subject/${id}/hide`, {}, {
@@ -46,7 +53,16 @@ const List = ({ history }) => {
           Authorization: token,
         },
       })
+  };
 
+  const deleteSubject = (id) => {
+    const token = getCookie("token");
+    return axios
+      .delete(`${process.env.REACT_APP_API_URL}/subject/${id}/`, {
+        headers: {
+          Authorization: token,
+        },
+      })
   };
   const getAll = () => {
     const token = getCookie("token");
@@ -67,6 +83,9 @@ const List = ({ history }) => {
         // setListTeachers(data);
         setState({ ...state, loading: false });
         setListSubject(data);
+      })
+      .catch(err => {
+        handleError(err);
       });
   };
 
@@ -120,10 +139,18 @@ const List = ({ history }) => {
           </Button>
 
           <Button
-            content={record.isDeleted ? 'Unhide' : 'Hide'}
+            content={record.isDeleted ? 'Unlock' : 'Lock'}
             primary
             icon={record.isDeleted ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-            onClick={() => { showConfirm(record) }}
+            onClick={() => { showConfirmLockSubject(record) }}
+          >
+          </Button>
+
+          <Button
+            content="Delete"
+            primary
+            icon={<DeleteOutlined />}
+            onClick={() => { showConfirmDeleteSubject(record) }}
           >
           </Button>
         </Space >
@@ -131,9 +158,31 @@ const List = ({ history }) => {
     },
   ];
 
-  const showConfirm = (record) => {
+  const showConfirmLockSubject = (record) => {
     confirm({
-      title: `Do you Want to ${record.isDeleted ? 'Unhide' : 'Hide'} this subject : ${record.name}?`,
+      title: `Do you Want to ${record.isDeleted ? 'Unlock' : 'Lock'} this subject : ${record.name}?`,
+      icon: <ExclamationCircleOutlined />,
+      onOk() {
+        // return deleteUser(record._id);
+        return new Promise((resolve, reject) => {
+          lockSubject(record._id)
+            .then((res) => {
+              toast.success(res.data.message);
+              setLoad(!load);
+              console.log(res.status);
+              resolve();
+            }).catch(err => {
+              handleError(err);
+              resolve();
+            });
+        });
+      },
+    });
+  }
+
+  const showConfirmDeleteSubject = (record) => {
+    confirm({
+      title: `Do you Want to Delete this subject : ${record.name}?`,
       icon: <ExclamationCircleOutlined />,
       onOk() {
         // return deleteUser(record._id);
@@ -145,13 +194,23 @@ const List = ({ history }) => {
               console.log(res.status);
               resolve();
             }).catch(err => {
-              console.log(err.response);
-              toast.error(err.response.data.message);
-              reject();
+              handleError(err);
+              resolve();
             });
-        }).catch(() => console.log('Oops errors!'));
+        });
       },
     });
+  }
+
+
+  const handleError = (error) => {
+    if (error.response.status === 401) {
+      history.push("/login");
+      toast.error("Your token is expired. Please login again");
+    } else {
+      console.log(error.response);
+      toast.error(error.response.data.message);
+    }
   }
 
   const showDrawer = () => {
@@ -166,7 +225,7 @@ const List = ({ history }) => {
       >
 
       </Button>
-      <SubjectDrawer load={load} setLoad={setLoad} visible={visible} setVisible={setVisible} subject={subject} setSubject={setSubject} />
+      <SubjectDrawer setAuthenticate={setAuthenticate} load={load} setLoad={setLoad} visible={visible} setVisible={setVisible} subject={subject} setSubject={setSubject} />
 
       <Table columns={columns} dataSource={listSubject}
         pagination={pagination} loading={loading}

@@ -1,6 +1,6 @@
 import React from "react";
 import { Route, Redirect } from "react-router-dom";
-import { isAuth } from "./controllers/localStorage.js";
+import { isAuth } from "./services/localStorage.js";
 
 const RedirectRoute = ({ component: Component, ...rest }) => (
   <Route

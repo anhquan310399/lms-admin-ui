@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getCookie, getLocalStorage, updateUser } from "../controllers/localStorage.js";
+import { getCookie, getLocalStorage, updateUser } from "../services/localStorage.js";
 import { toast } from "react-toastify";
 import axios from "axios";
 import 'antd/dist/antd.css';
@@ -57,10 +57,11 @@ const Manager = ({ history }) => {
                 },
             })
             .then((res) => {
+                formPassword.resetFields();
                 toast.success(res.data.message);
                 setSubmitPassword(false);
             }).catch(error => {
-                toast.error(error.response.data.message);
+                handleError(error);
                 setSubmitPassword(false);
             });
     };
@@ -90,7 +91,7 @@ const Manager = ({ history }) => {
                 setUser(res.data.user);
                 setSubmitProfile(false);
             }).catch(error => {
-                toast.error(error.response.data.message);
+                handleError(error);
                 setSubmitProfile(false);
             });
     }
@@ -114,7 +115,7 @@ const Manager = ({ history }) => {
                 setUser(res.data.user);
                 setConnectFacebook(false);
             }).catch(error => {
-                toast.error(error.response.data.message);
+                handleError(error);
                 setConnectFacebook(false);
             });
     };
@@ -136,10 +137,20 @@ const Manager = ({ history }) => {
                 setUser(res.data.user);
                 setDisconnectFacebook(false);
             }).catch(error => {
-                toast.error(error.response.data.message);
+                handleError(error);
                 setDisconnectFacebook(false);
             });
     };
+
+    const handleError = (error) => {
+        if (error.response.status === 401) {
+            history.push("/login");
+            toast.error("Your token is expired. Please login again");
+        } else {
+            console.log(error.response);
+            toast.error(error.response.data.message);
+        }
+    }
 
     return (
         <>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Avatar } from "@fluentui/react-northstar";
-import { signOut, getCookie, isAuth } from "../controllers/localStorage.js";
+import { signOut, getCookie, isAuth } from "../services/localStorage.js";
 import { toast } from "react-toastify";
 import axios from "axios";
 import 'antd/dist/antd.css';
@@ -32,7 +32,13 @@ const AccountInfo = ({ history }) => {
         setAccountDetail({ ...accountDetail, urlAvatar: urlAvatar, email: emailAddress, name: `${surName} ${firstName}` });
       })
       .catch((err) => {
-        toast.error(`abc ${err.response.statusText}`);
+        if (err.response.status === 401) {
+          history.push("/login");
+          toast.error("Your token is expired. Please login again");
+        } else {
+          console.log(err.response);
+          toast.error(err.response.data.message);
+        }
       });
   };
   const { urlAvatar, email, name } = accountDetail;

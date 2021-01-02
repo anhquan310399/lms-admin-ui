@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getCookie, isAuth } from "../controllers/localStorage.js";
+import { getCookie, isAuth } from "../services/localStorage.js";
 import axios from "axios";
 import { toast } from "react-toastify";
 import UserModal from './AddUserModal.jsx';
@@ -29,7 +29,16 @@ const List = ({ history, privilege }) => {
     loading: false,
   });
 
+  const [isAuthenticate, setAuthenticate] = useState(true);
+  useEffect(() => {
+    if (!isAuthenticate) {
+      history.push("/login");
+      toast.error("Your token is expired. Please login again");
+    }
+  }, [isAuthenticate])
 
+
+  const [user, setUser] = useState({});
 
   useEffect(() => {
     getAll();
@@ -37,10 +46,6 @@ const List = ({ history, privilege }) => {
 
   const deleteUser = (userId) => {
     const token = getCookie("token");
-    if (userId === isAuth()._id) {
-      toast.error("you can not delete you");
-      return;
-    }
     return axios
       .put(`${process.env.REACT_APP_API_URL}/user/${userId}/hide`, {}, {
         headers: {
@@ -62,16 +67,29 @@ const List = ({ history, privilege }) => {
         const data = [];
         const arr = res.data.data;
         arr.forEach((element) => {
-          const { _id, code, emailAddress, surName, firstName, urlAvatar, isDeleted } = element;
-          data.push({ key: data.length, _id, code, emailAddress, surName, firstName, isDeleted });
+          const { _id, code, emailAddress, surName, firstName, urlAvatar, isDeleted, idPrivilege } = element;
+          data.push({ key: data.length, _id, code, emailAddress, surName, firstName, isDeleted, idPrivilege });
         });
         // setListTeachers(data);
         setState({ ...state, data: data, loading: false });
+      })
+      .catch(error => {
+        handleError(error);
       });
   };
 
   const handleTableChange = (pagination) => {
     setState({ ...state, pagination: pagination });
+  }
+
+  const handleError = (error) => {
+    if (error.response.status === 401) {
+      history.push("/login");
+      toast.error("Your token is expired. Please login again");
+    } else {
+      console.log(error.response);
+      toast.error(error.response.data.message);
+    }
   }
 
   const { data, pagination, loading } = state;
@@ -104,7 +122,17 @@ const List = ({ history, privilege }) => {
       render: (text, record) => (
         <Space size="middle">
           <Button
-            content={record.isDeleted ? 'Unhide' : 'Hide'}
+            content={"Detail"}
+            primary
+            onClick={() => {
+              console.log(record);
+              setUser(record);
+              showModal();
+            }}
+          >
+          </Button>
+          <Button
+            content={record.isDeleted ? 'Unlock' : 'Lock'}
             primary
             icon={record.isDeleted ? <EyeOutlined /> : <EyeInvisibleOutlined />}
             onClick={() => { showConfirm(record) }}
@@ -117,7 +145,7 @@ const List = ({ history, privilege }) => {
 
   const showConfirm = (record) => {
     confirm({
-      title: `Do you Want to ${record.isDeleted ? 'Unhide' : 'Hide'} this user with code: ${record.code}?`,
+      title: `Do you Want to ${record.isDeleted ? 'Unlock' : 'Lock'} this user with code: ${record.code}?`,
       icon: <ExclamationCircleOutlined />,
       onOk() {
         // return deleteUser(record._id);
@@ -129,11 +157,10 @@ const List = ({ history, privilege }) => {
               console.log(res.status);
               resolve();
             }).catch(err => {
-              console.log(err.response);
-              toast.error(err.response.data.message);
-              reject();
+              resolve();
+              handleError(err);
             });
-        }).catch(() => console.log('Oops errors!'));
+        });
       },
     });
   }
@@ -150,7 +177,7 @@ const List = ({ history, privilege }) => {
       >
 
       </Button>
-      <UserModal load={load} setLoad={setLoad} visible={visible} setVisible={setVisible} idPrivilege={privilege}/>
+      <UserModal user={user} setUser={setUser} setAuthenticate={setAuthenticate} load={load} setLoad={setLoad} visible={visible} setVisible={setVisible} idPrivilege={privilege} />
 
       <Table columns={columns} dataSource={data}
         pagination={pagination} loading={loading}

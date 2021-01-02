@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import logo from "../assets/img/logo.png";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
-import { authenticate, isAuth } from "../controllers/localStorage.js";
+import { authenticate, isAuth } from "../services/localStorage.js";
 import { Link, Redirect } from "react-router-dom";
 import { GoogleLogin } from "react-google-login";
 import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
@@ -36,6 +36,7 @@ const Login = ({ history }) => {
         }
       })
       .catch((error) => {
+        toast.error(error.response.data.message);
         console.log("GOOGLE SIGNIN ERROR", error.response);
       });
   };
@@ -61,6 +62,7 @@ const Login = ({ history }) => {
         }
       })
       .catch((error) => {
+        toast.error(error.response.data.message);
         console.log("FACEBOOK SIGNIN ERROR", error.response);
       });
   };

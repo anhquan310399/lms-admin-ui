@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "antd/dist/antd.css";
-import { getCookie } from "../controllers/localStorage.js";
+import { getCookie } from "../services/localStorage.js";
 import axios from "axios";
 import { Form, Input, Select, Modal, Button } from "antd";
 import { toast } from "react-toastify";
@@ -20,10 +20,11 @@ const validateMessages = {
     }
 };
 
-const ModalPopup = ({ load, setLoad, visible, setVisible, idPrivilege }) => {
+const ModalPopup = ({ load, setLoad, visible, setVisible, idPrivilege, user, setUser, setAuthenticate }) => {
     const [loading, setLoading] = useState(false);
 
     const handleCancel = () => {
+        setUser({});
         form.resetFields();
         setVisible(false);
     };
@@ -53,7 +54,12 @@ const ModalPopup = ({ load, setLoad, visible, setVisible, idPrivilege }) => {
                 setVisible(false);
                 form.resetFields();
             }).catch(error => {
-                toast.error(error.response.data.message);
+                if (error.response.status === 401) {
+                    setAuthenticate(false);
+                } else {
+                    console.log(error.response);
+                    toast.error(error.response.data.message);
+                }
                 setLoading(false);
             });
     };
@@ -73,6 +79,10 @@ const ModalPopup = ({ load, setLoad, visible, setVisible, idPrivilege }) => {
             })
             .then((res) => {
                 setState({ ...state, privilege: res.data, loadingPrivilege: false });
+            })
+            .catch(error => {
+                console.log(error.response);
+                toast.error(error.response.data.message);
             });
     }
 
@@ -81,9 +91,23 @@ const ModalPopup = ({ load, setLoad, visible, setVisible, idPrivilege }) => {
     }, [])
 
     useEffect(() => {
-        form.setFieldsValue({
-            idPrivilege: idPrivilege
-        })
+        if (user._id) {
+            form.setFieldsValue({
+                idPrivilege: user.idPrivilege,
+                code: user.code,
+                emailAddress: user.emailAddress,
+                surName: user.surName,
+                firstName: user.firstName
+            })
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (!user._id) {
+            form.setFieldsValue({
+                idPrivilege: idPrivilege
+            })
+        }
     }, [idPrivilege])
 
     const { loadingPrivilege, privilege } = state;
@@ -92,17 +116,16 @@ const ModalPopup = ({ load, setLoad, visible, setVisible, idPrivilege }) => {
 
         <Modal
             visible={visible}
-            title="Add New User"
+            title={user._id ? "Detail User" : "Add New User"}
             onCancel={handleCancel}
             footer={[
                 <Button key="back" onClick={handleCancel}>
                     Return
                 </Button>,
-                <Button key="submit" form="myForm" htmlType="submit" type="primary" loading={loading} >
-                    Submit
-                </Button>,
-            ]}
-        >
+                !user._id && (<Button key="submit" form="myForm" htmlType="submit" type="primary" loading={loading} >
+                    Submit</Button>)
+
+            ]}>
             <Form
                 form={form}
                 id="myForm"
@@ -174,7 +197,7 @@ const ModalPopup = ({ load, setLoad, visible, setVisible, idPrivilege }) => {
                     <Input />
                 </Form.Item>
             </Form>
-        </Modal>
+        </Modal >
     );
 };
 

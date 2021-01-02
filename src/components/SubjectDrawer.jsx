@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import 'antd/dist/antd.css';
 import { Drawer, Form, Button, Input, Select, Upload } from 'antd';
-import { getCookie } from "../controllers/localStorage.js";
+import { getCookie } from "../services/localStorage.js";
 import { toast } from "react-toastify";
 import axios from "axios";
-import fileDownload  from 'js-file-download';
+import fileDownload from 'js-file-download';
 import {
     MinusCircleOutlined,
     PlusOutlined, UploadOutlined,
@@ -27,7 +27,7 @@ const validateMessages = {
 };
 
 
-const SubjectDrawer = ({ load, setLoad, visible, setVisible, subject, setSubject }) => {
+const SubjectDrawer = ({ load, setLoad, visible, setVisible, subject, setSubject, setAuthenticate }) => {
     const [loading, setLoading] = useState(false);
     const [loadingTeacher, setLoadingTeacher] = useState(true);
     const [form] = Form.useForm();
@@ -94,7 +94,12 @@ const SubjectDrawer = ({ load, setLoad, visible, setVisible, subject, setSubject
                 setSubject({});
                 form.resetFields();
             }).catch(error => {
-                toast.error(error.response.data.message);
+                if (error.response.status === 401) {
+                    setAuthenticate(false);
+                } else {
+                    console.log(error.response);
+                    toast.error(error.response.data.message);
+                }
                 setLoading(false);
             });
     }
@@ -113,7 +118,12 @@ const SubjectDrawer = ({ load, setLoad, visible, setVisible, subject, setSubject
                 setVisible(false);
                 form.resetFields();
             }).catch(error => {
-                toast.error(error.response.data.message);
+                if (error.response.status === 401) {
+                    setAuthenticate(false);
+                } else {
+                    console.log(error.response);
+                    toast.error(error.response.data.message);
+                }
                 setLoading(false);
             });
     }
@@ -130,6 +140,10 @@ const SubjectDrawer = ({ load, setLoad, visible, setVisible, subject, setSubject
             .then((res) => {
                 setLoadingTeacher(false);
                 setTeachers(res.data.data);
+            })
+            .catch(error => {
+                console.log(error.response);
+                toast.error(error.response.data.message);
             });
     }
 
@@ -183,10 +197,15 @@ const SubjectDrawer = ({ load, setLoad, visible, setVisible, subject, setSubject
                 responseType: 'blob'
             })
             .then((res) => {
-                fileDownload(res.data,`${subject.name}.json`);
+                fileDownload(res.data, `${subject.name}.json`);
                 setExportSubject(false);
             }).catch(error => {
-                toast.error(error.response.data.message);
+                if (error.response.status === 401) {
+                    setAuthenticate(false);
+                } else {
+                    console.log(error.response);
+                    toast.error(error.response.data.message);
+                }
                 setExportSubject(false);
             });
     }
