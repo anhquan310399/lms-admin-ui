@@ -59,6 +59,7 @@ const SubjectDrawer = ({ load, setLoad, visible, setVisible, subject, setSubject
                 idLecture: values.idLecture,
                 studentIds: values.studentIds,
                 quizBank: data.quizBank,
+                surveyBank:data.surveyBank,
                 timelines: data.timelines
             }
         } else {
@@ -90,9 +91,7 @@ const SubjectDrawer = ({ load, setLoad, visible, setVisible, subject, setSubject
                 toast.success(res.data.message);
                 setLoad(!load);
                 setLoading(false);
-                setVisible(false);
-                setSubject({});
-                form.resetFields();
+                onClose();
             }).catch(error => {
                 if (error.response.status === 401) {
                     setAuthenticate(false);

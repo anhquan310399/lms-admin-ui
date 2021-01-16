@@ -6,17 +6,18 @@ import axios from "axios";
 import 'antd/dist/antd.css';
 import { Popover } from 'antd';
 import '../assets/css/Popover.css';
-const AccountInfo = ({ history }) => {
+const AccountInfo = ({ history, isChangeProfile }) => {
+
   const [accountDetail, setAccountDetail] = useState({
     urlAvatar: "",
     name: "",
     email: ""
   });
-
   useEffect(() => {
     getAvatar();
     // eslint-disable-next-line
-  }, []);
+  }, [isChangeProfile]);
+
 
   const getAvatar = () => {
     const token = getCookie("token");

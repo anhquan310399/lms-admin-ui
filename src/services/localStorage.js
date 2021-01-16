@@ -4,8 +4,9 @@ import cookie from "js-cookie";
 export const setCookie = (key, value) => {
     if (window !== "undefined") {
         cookie.set(key, value, {
-            // 1 Day
-            expires: (1 / 1440) * 3,
+            // 1 Day / (24h * 60p) => 1p
+            // expires: (1 / 1440) * 3,
+            expires: 1,
         });
     }
 };
@@ -13,7 +14,8 @@ export const setCookie = (key, value) => {
 export const removeCookie = (key) => {
     if (window !== "undefined") {
         cookie.remove(key, {
-            expires: (1 / 1440) * 3,
+            // expires: (1 / 1440) * 3,
+            expires: 1,
         });
     }
 };

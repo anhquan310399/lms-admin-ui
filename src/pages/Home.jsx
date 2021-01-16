@@ -21,6 +21,8 @@ const { Header, Sider, Content } = Layout;
 
 function Home({ history }) {
 
+  const [isChangeProfile, setChangeProfile] = useState(false);
+
   const [isToggle, setToggle] = useState(false);
   const [typeTable, setTypeTable] = useState('teacher');
 
@@ -63,7 +65,7 @@ function Home({ history }) {
             onClick: toggle,
           })}
           <div className='layout-account-info' style={{ backgroundImage: `url(${logo_header})` }}>
-            <AccountPopover history={history} setTypeTable={setTypeTable} />
+            <AccountPopover isChangeProfile={isChangeProfile} history={history} setTypeTable={setTypeTable} />
           </div>
         </Header>
         <ToastContainer />
@@ -77,7 +79,7 @@ function Home({ history }) {
         >
           {(typeTable === 'student' || typeTable === 'teacher') && <UserManagement history={history} privilege={typeTable} />}
           {(typeTable === 'subject') && <SubjectManagement history={history} />}
-          {(typeTable === 'account') && <AccountManagement history={history} />}
+          {(typeTable === 'account') && <AccountManagement history={history} setChangeProfile={setChangeProfile}  isChangeProfile={isChangeProfile}/>}
 
         </Content>
       </Layout>

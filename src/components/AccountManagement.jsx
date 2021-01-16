@@ -19,7 +19,7 @@ const SectionDescription = ({ title, content }) => (
     </div>
 );
 
-const Manager = ({ history }) => {
+const Manager = ({ history, setChangeProfile ,isChangeProfile}) => {
     const [formPassword] = Form.useForm();
     const [formProfile] = Form.useForm();
 
@@ -89,6 +89,7 @@ const Manager = ({ history }) => {
                 toast.success(res.data.message);
                 updateUser(res.data.user);
                 setUser(res.data.user);
+                setChangeProfile(!isChangeProfile);
                 setSubmitProfile(false);
             }).catch(error => {
                 handleError(error);
